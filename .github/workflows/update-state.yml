@@ -1,26 +1,24 @@
 name: Update Light State
 
 on:
-  issues:
-    types: [opened]
+  workflow_dispatch:
+    inputs:
+      new_state:
+        description: 'Switch state'
+        required: true
+        default: 'OFF'
 
 jobs:
   update-state:
     runs-on: ubuntu-latest
-    if: startsWith(github.event.issue.title, 'Switch to ')
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
 
-      - name: Extract state from issue title
-        id: extract
-        run: |
-          echo "STATE=$(echo '${{ github.event.issue.title }}' | cut -d' ' -f3)" >> $GITHUB_OUTPUT
+    steps:
+      - uses: actions/checkout@v3
 
       - name: Update state.json
-        run: echo "{ \"state\": \"${{ steps.extract.outputs.STATE }}\" }" > state.json
+        run: echo "{ \"state\": \"${{ github.event.inputs.new_state }}\" }" > state.json
 
-      - name: Commit and push changes
+      - name: Commit and push
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update light state to ${{ steps.extract.outputs.STATE }}"
+          commit_message: "Update state to ${{ github.event.inputs.new_state }}"
