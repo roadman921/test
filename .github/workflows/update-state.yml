@@ -1,0 +1,26 @@
+name: Update Light State
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  update-state:
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.issue.title, 'Switch to ')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Extract state from issue title
+        id: extract
+        run: |
+          echo "STATE=$(echo '${{ github.event.issue.title }}' | cut -d' ' -f3)" >> $GITHUB_OUTPUT
+
+      - name: Update state.json
+        run: echo "{ \"state\": \"${{ steps.extract.outputs.STATE }}\" }" > state.json
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update light state to ${{ steps.extract.outputs.STATE }}"
